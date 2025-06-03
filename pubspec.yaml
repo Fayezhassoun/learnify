@@ -1,0 +1,28 @@
+name: learnify
+
+description: >
+  A cross-platform learning app using Flutter.
+
+publish_to: 'none'
+
+version: 0.1.0
+
+environment:
+  sdk: '>=2.18.0 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  http: ^0.13.5
+  firebase_core: ^2.13.0
+  firebase_auth: ^4.2.7
+  cloud_firestore: ^4.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
