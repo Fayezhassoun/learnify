@@ -1,0 +1,25 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub/
+build/
+
+# Visual Studio Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Android
+local.properties
+
+# iOS
+**/Flutter.podspec
+Pods/
+
+# Generated files
+**/*.iml
+.idea/
+
+# Others
+.env
