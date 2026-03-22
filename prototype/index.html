@@ -10,23 +10,26 @@
   <div class="shell">
     <aside class="sidebar">
       <div>
-        <p class="eyebrow">Prototype</p>
+        <p class="eyebrow">Functional prototype</p>
         <h1>Profit Engine Ops Console</h1>
         <p class="sidebar-copy">
-          A first prototype for a profit-first campaign decision system focused on subscription and MVAS advertisers.
+          A data-driven first prototype for a profit-first campaign decision system focused on subscription and MVAS advertisers.
         </p>
       </div>
       <div class="sidebar-card">
-        <p class="label">Mode</p>
-        <strong>Semi-autonomous</strong>
-        <p>Low-risk actions can execute automatically. High-risk actions require approval.</p>
+        <p class="label">Scenario</p>
+        <select id="scenarioSelect" class="scenario-select">
+          <option value="baseline">Baseline operating state</option>
+          <option value="anomaly">Tracking anomaly state</option>
+        </select>
+        <p id="scenarioLabel">Baseline scenario</p>
       </div>
       <div class="sidebar-card">
         <p class="label">Decision policy</p>
         <ul>
-          <li>Optimize for retained margin</li>
-          <li>Block actions on bad data</li>
-          <li>Throttle budget shifts by guardrails</li>
+          <li>Optimize retained margin after refunds and service cost</li>
+          <li>Route high-risk mutations to approvals</li>
+          <li>Freeze mutations when tracking quality degrades</li>
         </ul>
       </div>
     </aside>
@@ -35,14 +38,13 @@
       <section class="hero">
         <div>
           <p class="eyebrow">Agentic AI Campaign Decision Engine</p>
-          <h2>Stop buying conversions. Start buying profit.</h2>
+          <h2>From static mockup to functional decision prototype</h2>
           <p class="hero-copy">
-            This prototype monitors campaign efficiency, downstream billing quality, and churn risk to rank actions a growth operator can trust.
+            This version computes profitability, payback, and recommendations from structured campaign data instead of rendering hardcoded cards.
           </p>
         </div>
         <div class="hero-actions">
           <button id="recomputeBtn" class="primary">Recompute decisions</button>
-          <button id="toggleDataBtn" class="secondary">Inject tracking anomaly</button>
         </div>
       </section>
 
@@ -53,7 +55,7 @@
           <div class="panel-head">
             <div>
               <p class="eyebrow">Action feed</p>
-              <h3>Top ranked decisions</h3>
+              <h3>Ranked decisions generated from live scenario data</h3>
             </div>
             <span id="dataHealthBadge" class="badge neutral">Data health: Stable</span>
           </div>
@@ -63,11 +65,11 @@
         <div class="panel">
           <div class="panel-head">
             <div>
-              <p class="eyebrow">Approval queue</p>
-              <h3>High-risk actions</h3>
+              <p class="eyebrow">Recommendation detail</p>
+              <h3>Why the engine wants to act</h3>
             </div>
           </div>
-          <div id="approvalQueue" class="stack"></div>
+          <div id="detailDrawer"></div>
         </div>
       </section>
 
@@ -75,26 +77,36 @@
         <div class="panel">
           <div class="panel-head">
             <div>
-              <p class="eyebrow">Profitability heatmap</p>
-              <h3>Segment quality snapshot</h3>
+              <p class="eyebrow">Approval queue</p>
+              <h3>Mutations requiring a human decision</h3>
             </div>
           </div>
-          <div id="heatmap" class="stack"></div>
+          <div id="approvalQueue" class="stack"></div>
         </div>
 
         <div class="panel">
           <div class="panel-head">
             <div>
-              <p class="eyebrow">Audit trail</p>
-              <h3>Recent actions and rationale</h3>
+              <p class="eyebrow">Profitability heatmap</p>
+              <h3>Segment quality computed from actual scenario inputs</h3>
             </div>
           </div>
-          <div id="auditTrail" class="stack"></div>
+          <div id="heatmap" class="stack"></div>
         </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Audit trail</p>
+            <h3>Recent operating events</h3>
+          </div>
+        </div>
+        <div id="auditTrail" class="stack"></div>
       </section>
     </main>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

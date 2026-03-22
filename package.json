@@ -1,0 +1,8 @@
+{
+  "name": "learnify-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node prototype/tests/engine.test.mjs"
+  }
+}

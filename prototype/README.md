@@ -1,36 +1,36 @@
 # Agentic AI Campaign Decision Engine Prototype
 
-This prototype is a lightweight static demo of the first operator workflow for the product concept:
+This prototype is now a small functional demo rather than a static mockup.
 
-- monitor campaign profitability using downstream business signals
-- surface trust-aware recommendations
-- separate low-risk auto-executable actions from high-risk approvals
-- block actioning when data quality degrades
+## What it does
+
+- loads structured scenario data from JSON
+- computes profitability, payback, and confidence per segment
+- generates ranked recommendations from decision logic
+- routes risky actions into an approvals queue
+- freezes actioning when tracking quality degrades
 
 ## How to run
 
-From the repository root, run one of the following:
+From the repository root:
 
 ```bash
 python3 -m http.server 8000
 # then open http://localhost:8000/prototype/
 ```
 
-## Prototype scenarios
+## Included scenarios
 
-The interface includes two states:
+1. **Baseline operating state**
+   - healthy tracking
+   - profitable and unprofitable segments mixed together
+   - budget-cut, exclusion, and scale recommendations generated from data
+2. **Tracking anomaly state**
+   - one segment degrades to trigger a data-freeze recommendation
+   - account data health changes from stable to critical
 
-1. **Stable data mode**
-   - shows ranked actions based on retained margin and payback logic
-2. **Tracking anomaly mode**
-   - simulates a broken postback / conversion issue
-   - shifts the system into a guarded no-action posture
+## Files
 
-## Why this is the right first prototype
-
-It demonstrates the core wedge before building heavy infrastructure:
-
-- a profit-first overview instead of a dashboard of vanity metrics
-- an action feed instead of raw reporting
-- approval-aware recommendations instead of blind automation
-- data-quality gating as a first-class control
+- `engine.js` contains the scoring and recommendation logic
+- `app.js` loads scenario data and renders the interactive UI
+- `data-baseline.json` and `data-anomaly.json` contain example account states

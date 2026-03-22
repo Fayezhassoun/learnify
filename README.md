@@ -1,17 +1,24 @@
 # learnify
 
-Initial prototype for an **Agentic AI Campaign Decision Engine** focused on subscription and MVAS performance marketing.
+Functional first prototype for an **Agentic AI Campaign Decision Engine** focused on subscription and MVAS performance marketing.
 
-## Included in this first prototype
+## Included in this version
 
-- A static front-end demo of a profit-first campaign operations console in `prototype/`
-- A simple operator workflow covering:
-  - profitability summary
-  - ranked action feed
+- A data-driven front-end demo in `prototype/`
+- Scenario JSON inputs for baseline and tracking-anomaly states
+- A lightweight decision engine that computes:
+  - estimated profit
+  - payback period
+  - profitability scores
+  - confidence
+  - ranked recommendations
+- Interactive operator workflow covering:
+  - summary metrics
+  - action feed
+  - recommendation detail panel
   - approvals queue
   - profitability heatmap
   - audit trail
-  - tracking anomaly mode
 
 ## Run locally
 
@@ -20,9 +27,10 @@ python3 -m http.server 8000
 # open http://localhost:8000/prototype/
 ```
 
-## Why this prototype exists
+## Why this matters
 
-This is the first tangible version of the product vision:
-- not another dashboard
-- not a generic AI copilot
-- a trust-aware decision console for profit-first campaign operations
+This version moves beyond static demo cards and shows the first actual product loop:
+- structured campaign inputs
+- profit-aware scoring
+- trust-aware recommendations
+- approval-aware action routing

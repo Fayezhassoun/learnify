@@ -1,113 +1,27 @@
-const baselineState = {
-  dataHealthy: true,
-  metrics: {
-    spend: 142000,
-    expectedProfit: 31800,
-    paybackDays: 27,
-    atRiskSpend: 23800,
-  },
-  opportunities: [
-    {
-      id: 'rec-1',
-      title: 'Cut budget on Meta Prospecting - Broad - US',
-      type: 'Budget decrease',
-      target: 'Campaign',
-      expectedImpact: '+$8.4k retained margin / 14 days',
-      confidence: 0.88,
-      risk: 'Medium',
-      approvalRequired: true,
-      reason:
-        'CPA looks efficient, but first-bill rate is 21% below target and day-14 retention is deteriorating. Keeping current spend is likely to extend payback beyond target.',
-      evidence: ['Spend touched: $18.2k', 'Payback drift: +11 days', 'Refund spike: +18% vs baseline'],
-    },
-    {
-      id: 'rec-2',
-      title: 'Exclude low-quality Audience Network placements',
-      type: 'Placement exclusion',
-      target: 'Placement group',
-      expectedImpact: '+$5.1k profit protection / 7 days',
-      confidence: 0.92,
-      risk: 'Low',
-      approvalRequired: false,
-      reason:
-        'Placements drive 34% of conversions but only 11% of first billings. Downstream value is materially below threshold with stable sample size.',
-      evidence: ['Placement spend: $9.6k', 'First bill gap: -49%', 'Action blast radius: limited'],
-    },
-    {
-      id: 'rec-3',
-      title: 'Scale Google Search - Carrier Plan 7 - UK',
-      type: 'Budget increase',
-      target: 'Campaign',
-      expectedImpact: '+$6.8k retained margin / 14 days',
-      confidence: 0.73,
-      risk: 'Medium',
-      approvalRequired: true,
-      reason:
-        'CPC is above account average, but retained gross margin per subscriber is strongest in this cohort and payback remains under target.',
-      evidence: ['CPC: +19%', 'Day-30 retention: +24%', 'Payback: 19 days'],
-    },
-  ],
-  segments: [
-    { label: 'UK / Android / Search', score: 84, status: 'good', note: 'High retained margin, safe scale candidate' },
-    { label: 'US / Broad / Social', score: 42, status: 'warn', note: 'Cheap CPA, weak first billing quality' },
-    { label: 'DE / Audience Network', score: 19, status: 'bad', note: 'High churn-adjusted loss risk' },
-    { label: 'FR / iOS / Prospecting', score: 68, status: 'good', note: 'Stable quality, hold or gradual scale' },
-  ],
-  audit: [
-    {
-      title: 'Budget cut approved on TikTok trial cohort',
-      detail: 'Action reduced campaign budget by 20% after day-7 retention fell below minimum threshold. Expected payback improved from 44 to 31 days.',
-    },
-    {
-      title: 'Automation blocked due to postback lag',
-      detail: 'Data Quality Agent froze all scaling actions after conversion postbacks lagged 4.8 hours above normal.',
-    },
-    {
-      title: 'Placement exclusions auto-executed',
-      detail: 'Low-risk inventory blocklist applied to three placements with sufficient spend and consistent downstream losses.',
-    },
-  ],
+import { evaluateScenario } from './engine.js';
+
+const scenarios = {
+  baseline: 'data-baseline.json',
+  anomaly: 'data-anomaly.json',
 };
 
-const anomalyState = {
-  ...baselineState,
-  dataHealthy: false,
-  metrics: {
-    ...baselineState.metrics,
-    expectedProfit: 11900,
-    atRiskSpend: 51700,
-  },
-  opportunities: [
-    {
-      id: 'rec-a1',
-      title: 'Freeze budget mutations across Meta workspaces',
-      type: 'No action / Data freeze',
-      target: 'Account group',
-      expectedImpact: 'Prevent false pauses until signal is restored',
-      confidence: 0.96,
-      risk: 'High',
-      approvalRequired: true,
-      reason:
-        'Platform conversions fell sharply while billing and landing-page engagement remain stable. This pattern strongly indicates tracking failure rather than campaign collapse.',
-      evidence: ['Conversion delta: -58%', 'Billing delta: -3%', 'Postback latency: +340%'],
-    },
-    ...baselineState.opportunities.slice(1),
-  ],
-  segments: baselineState.segments.map((segment, index) =>
-    index === 1 ? { ...segment, score: 31, status: 'bad', note: 'Signal unreliable until postback integrity is restored' } : segment
-  ),
-  audit: [
-    {
-      title: 'Critical anomaly detected in conversion tracking',
-      detail: 'Data Quality Agent blocked campaign-level budget actions because billing, click, and engagement signals diverged from conversion reporting.',
-    },
-    ...baselineState.audit,
-  ],
+const state = {
+  scenario: 'baseline',
+  evaluation: null,
+  selectedRecommendationId: null,
+  approvalsState: new Map(),
 };
-
-let state = baselineState;
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+async function loadScenario(name) {
+  const response = await fetch(scenarios[name]);
+  const data = await response.json();
+  state.scenario = name;
+  state.evaluation = evaluateScenario(data);
+  state.selectedRecommendationId = state.evaluation.recommendations[0]?.id ?? null;
+  render();
+}
 
 function metricCard(title, value, subtitle, trend, tone = 'neutral') {
   return `
@@ -123,74 +37,88 @@ function metricCard(title, value, subtitle, trend, tone = 'neutral') {
 function badgeClass(value) {
   const normalized = value.toLowerCase();
   if (normalized.includes('low') || normalized.includes('stable')) return 'good';
-  if (normalized.includes('high')) return 'danger';
+  if (normalized.includes('high') || normalized.includes('critical')) return 'danger';
   if (normalized.includes('medium')) return 'warn';
   return 'neutral';
 }
 
-function render() {
+function recommendationState(rec) {
+  return state.approvalsState.get(rec.id) ?? (rec.approvalRequired ? 'Pending approval' : 'Ready');
+}
+
+function renderSummary() {
+  const { metrics, dataHealth } = state.evaluation;
   document.getElementById('summaryGrid').innerHTML = [
-    metricCard('Spend monitored', currency.format(state.metrics.spend), 'Cross-channel monitored spend in current window.', 'Within guardrail envelope'),
-    metricCard('Expected profit', currency.format(state.metrics.expectedProfit), 'Estimated churn-adjusted contribution after spend.', state.dataHealthy ? 'Positive profit trajectory' : 'Compressed by signal instability', state.dataHealthy ? 'good' : 'warn'),
-    metricCard('Payback period', `${state.metrics.paybackDays} days`, 'Median payback based on current retained margin curves.', state.dataHealthy ? 'Below target threshold' : 'Confidence reduced', state.dataHealthy ? 'good' : 'warn'),
-    metricCard('At-risk spend', currency.format(state.metrics.atRiskSpend), 'Spend currently exposed to poor quality or bad data.', state.dataHealthy ? 'Contained and actionable' : 'Expanded due to tracking anomaly', state.dataHealthy ? 'warn' : 'danger'),
+    metricCard('Spend monitored', currency.format(metrics.spend), 'Live scenario spend under evaluation.', 'Decision cycle ready'),
+    metricCard('Expected profit', currency.format(metrics.expectedProfit), 'Estimated contribution after churn and refund adjustments.', metrics.expectedProfit >= 0 ? 'Positive unit economics' : 'Profit pressure detected', metrics.expectedProfit >= 0 ? 'good' : 'danger'),
+    metricCard('Payback period', `${metrics.paybackDays} days`, 'Average modeled payback across active segments.', metrics.paybackDays <= state.evaluation.account.targetPaybackDays ? 'Within target policy' : 'Above target threshold', metrics.paybackDays <= state.evaluation.account.targetPaybackDays ? 'good' : 'warn'),
+    metricCard('At-risk spend', currency.format(metrics.atRiskSpend), 'Spend exposed to losses or unreliable signal.', dataHealth === 'stable' ? 'Containment possible' : 'Expanded due to tracking risk', dataHealth === 'stable' ? 'warn' : 'danger'),
   ].join('');
 
-  document.getElementById('dataHealthBadge').className = `badge ${state.dataHealthy ? 'good' : 'danger'}`;
-  document.getElementById('dataHealthBadge').textContent = `Data health: ${state.dataHealthy ? 'Stable' : 'Critical anomaly'}`;
+  const healthLabel = dataHealth === 'stable' ? 'Stable' : 'Critical anomaly';
+  const badge = document.getElementById('dataHealthBadge');
+  badge.className = `badge ${badgeClass(healthLabel)}`;
+  badge.textContent = `Data health: ${healthLabel}`;
+}
 
-  document.getElementById('actionFeed').innerHTML = state.opportunities.map((item) => `
-    <article class="action-card">
+function renderActions() {
+  document.getElementById('actionFeed').innerHTML = state.evaluation.recommendations.map((item) => `
+    <article class="action-card ${state.selectedRecommendationId === item.id ? 'selected' : ''}" data-rec-id="${item.id}">
       <header>
         <div>
           <p class="label">${item.type}</p>
           <h4>${item.title}</h4>
-          <p>${item.reason}</p>
+          <p>${item.rationale}</p>
         </div>
         <span class="badge ${badgeClass(item.risk)}">${item.risk} risk</span>
       </header>
       <div class="meta-row">
-        <span class="meta-chip">Expected impact: ${item.expectedImpact}</span>
+        <span class="meta-chip">Impact: ${item.impactLabel}</span>
         <span class="meta-chip">Confidence: ${(item.confidence * 100).toFixed(0)}%</span>
         <span class="meta-chip">Target: ${item.target}</span>
       </div>
-      <p class="row-note">Evidence: ${item.evidence.join(' • ')}</p>
+      <p class="row-note">${item.action}</p>
       <div class="action-actions">
-        <button class="approve">${item.approvalRequired ? 'Send for approval' : 'Auto-executable'}</button>
-        <button class="ghost">View rationale</button>
+        <button class="approve" data-action="approve" data-rec-id="${item.id}">${item.approvalRequired ? recommendationState(item) : 'Auto-executable'}</button>
+        <button class="ghost" data-action="focus" data-rec-id="${item.id}">View detail</button>
       </div>
     </article>
   `).join('');
+}
 
-  const approvals = state.opportunities.filter((item) => item.approvalRequired);
-  document.getElementById('approvalQueue').innerHTML = approvals.length
-    ? approvals.map((item) => `
+function renderApprovals() {
+  document.getElementById('approvalQueue').innerHTML = state.evaluation.approvals.length
+    ? state.evaluation.approvals.map((item) => `
       <article class="action-card">
-        <p class="label">Awaiting approver</p>
+        <p class="label">Approval queue</p>
         <h4>${item.title}</h4>
-        <p>${item.expectedImpact}</p>
+        <p>${item.impactLabel}</p>
         <div class="meta-row">
+          <span class="meta-chip">State: ${recommendationState(item)}</span>
           <span class="meta-chip">Confidence ${(item.confidence * 100).toFixed(0)}%</span>
-          <span class="meta-chip">${item.risk} risk</span>
         </div>
       </article>
     `).join('')
     : '<div class="empty">No high-risk actions are waiting for review.</div>';
+}
 
-  document.getElementById('heatmap').innerHTML = state.segments.map((segment) => `
+function renderHeatmap() {
+  document.getElementById('heatmap').innerHTML = state.evaluation.segments.map((segment) => `
     <article class="heat-row">
       <header>
         <div>
-          <p class="label">Segment</p>
-          <h4>${segment.label}</h4>
+          <p class="label">${segment.channel} / ${segment.geo} / ${segment.placement}</p>
+          <h4>${segment.campaign}</h4>
         </div>
-        <div class="heat-score ${segment.status}">${segment.score}</div>
+        <div class="heat-score ${segment.profitabilityScore >= 70 ? 'good' : segment.profitabilityScore >= 40 ? 'warn' : 'bad'}">${segment.profitabilityScore}</div>
       </header>
-      <p>${segment.note}</p>
+      <p>Estimated profit ${currency.format(segment.estimatedProfit)} · Payback ${segment.paybackDays} days · First bill ${(segment.firstBillRate * 100).toFixed(0)}%</p>
     </article>
   `).join('');
+}
 
-  document.getElementById('auditTrail').innerHTML = state.audit.map((item) => `
+function renderAudit() {
+  document.getElementById('auditTrail').innerHTML = state.evaluation.audit.map((item) => `
     <article class="audit-item">
       <strong>${item.title}</strong>
       <p>${item.detail}</p>
@@ -198,14 +126,66 @@ function render() {
   `).join('');
 }
 
-document.getElementById('recomputeBtn').addEventListener('click', () => {
-  state = baselineState;
-  render();
-});
+function renderDetail() {
+  const recommendation = state.evaluation.recommendations.find((item) => item.id === state.selectedRecommendationId) ?? state.evaluation.recommendations[0];
+  if (!recommendation) return;
+  document.getElementById('detailDrawer').innerHTML = `
+    <article class="detail-card">
+      <p class="label">Recommendation detail</p>
+      <h3>${recommendation.title}</h3>
+      <p>${recommendation.rationale}</p>
+      <div class="meta-row">
+        <span class="meta-chip">Type: ${recommendation.type}</span>
+        <span class="meta-chip">Risk: ${recommendation.risk}</span>
+        <span class="meta-chip">Confidence: ${(recommendation.confidence * 100).toFixed(0)}%</span>
+      </div>
+      <ul class="detail-list">
+        ${recommendation.evidence.map((evidence) => `<li>${evidence}</li>`).join('')}
+      </ul>
+      <p class="row-note">Recommended action: ${recommendation.action}</p>
+    </article>
+  `;
+}
 
-document.getElementById('toggleDataBtn').addEventListener('click', () => {
-  state = state.dataHealthy ? anomalyState : baselineState;
-  render();
-});
+function renderScenarioLabel() {
+  document.getElementById('scenarioLabel').textContent = state.scenario === 'baseline' ? 'Baseline scenario' : 'Tracking anomaly scenario';
+}
 
-render();
+function render() {
+  renderScenarioLabel();
+  renderSummary();
+  renderActions();
+  renderApprovals();
+  renderHeatmap();
+  renderAudit();
+  renderDetail();
+}
+
+function attachEvents() {
+  document.getElementById('scenarioSelect').addEventListener('change', (event) => {
+    loadScenario(event.target.value);
+  });
+
+  document.getElementById('recomputeBtn').addEventListener('click', () => {
+    loadScenario(state.scenario);
+  });
+
+  document.getElementById('actionFeed').addEventListener('click', (event) => {
+    const recId = event.target.dataset.recId;
+    const action = event.target.dataset.action;
+    if (!recId || !action) return;
+
+    state.selectedRecommendationId = recId;
+    if (action === 'approve') {
+      const recommendation = state.evaluation.recommendations.find((item) => item.id === recId);
+      if (recommendation?.approvalRequired) {
+        state.approvalsState.set(recId, 'Approved');
+      }
+    }
+
+    render();
+  });
+}
+
+attachEvents();
+loadScenario('baseline');
