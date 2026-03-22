@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic AI Campaign Decision Engine Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div>
+        <p class="eyebrow">Prototype</p>
+        <h1>Profit Engine Ops Console</h1>
+        <p class="sidebar-copy">
+          A first prototype for a profit-first campaign decision system focused on subscription and MVAS advertisers.
+        </p>
+      </div>
+      <div class="sidebar-card">
+        <p class="label">Mode</p>
+        <strong>Semi-autonomous</strong>
+        <p>Low-risk actions can execute automatically. High-risk actions require approval.</p>
+      </div>
+      <div class="sidebar-card">
+        <p class="label">Decision policy</p>
+        <ul>
+          <li>Optimize for retained margin</li>
+          <li>Block actions on bad data</li>
+          <li>Throttle budget shifts by guardrails</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Agentic AI Campaign Decision Engine</p>
+          <h2>Stop buying conversions. Start buying profit.</h2>
+          <p class="hero-copy">
+            This prototype monitors campaign efficiency, downstream billing quality, and churn risk to rank actions a growth operator can trust.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="recomputeBtn" class="primary">Recompute decisions</button>
+          <button id="toggleDataBtn" class="secondary">Inject tracking anomaly</button>
+        </div>
+      </section>
+
+      <section class="summary-grid" id="summaryGrid"></section>
+
+      <section class="layout-grid">
+        <div class="panel panel-wide">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Action feed</p>
+              <h3>Top ranked decisions</h3>
+            </div>
+            <span id="dataHealthBadge" class="badge neutral">Data health: Stable</span>
+          </div>
+          <div id="actionFeed" class="stack"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Approval queue</p>
+              <h3>High-risk actions</h3>
+            </div>
+          </div>
+          <div id="approvalQueue" class="stack"></div>
+        </div>
+      </section>
+
+      <section class="layout-grid lower-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Profitability heatmap</p>
+              <h3>Segment quality snapshot</h3>
+            </div>
+          </div>
+          <div id="heatmap" class="stack"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Audit trail</p>
+              <h3>Recent actions and rationale</h3>
+            </div>
+          </div>
+          <div id="auditTrail" class="stack"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
