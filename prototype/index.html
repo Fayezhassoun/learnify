@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic AI Campaign Decision Engine Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div>
+        <p class="eyebrow">Functional prototype</p>
+        <h1>Profit Engine Ops Console</h1>
+        <p class="sidebar-copy">
+          A data-driven first prototype for a profit-first campaign decision system focused on subscription and MVAS advertisers.
+        </p>
+      </div>
+      <div class="sidebar-card">
+        <p class="label">Scenario</p>
+        <select id="scenarioSelect" class="scenario-select">
+          <option value="baseline">Baseline operating state</option>
+          <option value="anomaly">Tracking anomaly state</option>
+        </select>
+        <p id="scenarioLabel">Baseline scenario</p>
+      </div>
+      <div class="sidebar-card">
+        <p class="label">Decision policy</p>
+        <ul>
+          <li>Optimize retained margin after refunds and service cost</li>
+          <li>Route high-risk mutations to approvals</li>
+          <li>Freeze mutations when tracking quality degrades</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Agentic AI Campaign Decision Engine</p>
+          <h2>From static mockup to functional decision prototype</h2>
+          <p class="hero-copy">
+            This version computes profitability, payback, and recommendations from structured campaign data instead of rendering hardcoded cards.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="recomputeBtn" class="primary">Recompute decisions</button>
+        </div>
+      </section>
+
+      <section class="summary-grid" id="summaryGrid"></section>
+
+      <section class="layout-grid">
+        <div class="panel panel-wide">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Action feed</p>
+              <h3>Ranked decisions generated from live scenario data</h3>
+            </div>
+            <span id="dataHealthBadge" class="badge neutral">Data health: Stable</span>
+          </div>
+          <div id="actionFeed" class="stack"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Recommendation detail</p>
+              <h3>Why the engine wants to act</h3>
+            </div>
+          </div>
+          <div id="detailDrawer"></div>
+        </div>
+      </section>
+
+      <section class="layout-grid lower-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Approval queue</p>
+              <h3>Mutations requiring a human decision</h3>
+            </div>
+          </div>
+          <div id="approvalQueue" class="stack"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Profitability heatmap</p>
+              <h3>Segment quality computed from actual scenario inputs</h3>
+            </div>
+          </div>
+          <div id="heatmap" class="stack"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Audit trail</p>
+            <h3>Recent operating events</h3>
+          </div>
+        </div>
+        <div id="auditTrail" class="stack"></div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

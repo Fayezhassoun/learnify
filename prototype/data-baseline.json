@@ -1,0 +1,90 @@
+{
+  "account": {
+    "name": "Northstar Subscriptions",
+    "mode": "semi_autonomous",
+    "targetPaybackDays": 30,
+    "dailyBudgetMoveCapPct": 20,
+    "minConversions": 20,
+    "minSpend": 2500
+  },
+  "segments": [
+    {
+      "id": "seg-uk-search",
+      "channel": "Google",
+      "campaign": "Search - Carrier Plan 7 - UK",
+      "geo": "UK",
+      "device": "Android",
+      "placement": "Search",
+      "spend": 24000,
+      "conversions": 520,
+      "firstBillRate": 0.58,
+      "retainedRevenuePerSub": 154,
+      "refundRate": 0.03,
+      "serviceCostPerSub": 12,
+      "retention30d": 0.67,
+      "cpc": 2.9,
+      "trackingStatus": "healthy"
+    },
+    {
+      "id": "seg-us-social",
+      "channel": "Meta",
+      "campaign": "Prospecting - Broad - US",
+      "geo": "US",
+      "device": "Android",
+      "placement": "Feed",
+      "spend": 18200,
+      "conversions": 610,
+      "firstBillRate": 0.33,
+      "retainedRevenuePerSub": 46,
+      "refundRate": 0.14,
+      "serviceCostPerSub": 11,
+      "retention30d": 0.31,
+      "cpc": 1.4,
+      "trackingStatus": "healthy"
+    },
+    {
+      "id": "seg-de-an",
+      "channel": "Meta",
+      "campaign": "Audience Network Expansion - DE",
+      "geo": "DE",
+      "device": "Android",
+      "placement": "Audience Network",
+      "spend": 9600,
+      "conversions": 410,
+      "firstBillRate": 0.18,
+      "retainedRevenuePerSub": 24,
+      "refundRate": 0.21,
+      "serviceCostPerSub": 9,
+      "retention30d": 0.22,
+      "cpc": 0.82,
+      "trackingStatus": "healthy"
+    },
+    {
+      "id": "seg-fr-ios",
+      "channel": "Meta",
+      "campaign": "Prospecting - iOS - FR",
+      "geo": "FR",
+      "device": "iOS",
+      "placement": "Feed",
+      "spend": 14100,
+      "conversions": 305,
+      "firstBillRate": 0.54,
+      "retainedRevenuePerSub": 136,
+      "refundRate": 0.04,
+      "serviceCostPerSub": 13,
+      "retention30d": 0.59,
+      "cpc": 2.3,
+      "trackingStatus": "healthy"
+    }
+  ],
+  "audit": [
+    {
+      "title": "Placement exclusions auto-executed",
+      "detail": "Low-risk placement exclusions were applied yesterday after two decision cycles with negative retained margin."
+    },
+    {
+      "title": "Budget cut approved on US broad campaign",
+      "detail": "Growth lead approved a 15% budget decrease after payback drift exceeded the account threshold."
+    }
+  ]
+}
