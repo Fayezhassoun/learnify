@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from "react";
 import {
   Bookmark,
   BookmarkCheck,
@@ -7,65 +8,104 @@ import {
   Clock,
   Flame,
   Play,
+  RotateCcw,
   Search,
   Sparkles,
+  Target,
   Trophy,
+  WandSparkles,
 } from "lucide-react";
 import { lessons, topics } from "./data/lessons";
-import type { Lesson } from "./types";
+import type { FeedMode, Lesson } from "./types";
+
+const progressKey = "learnify-progress-v2";
+
+type StoredProgress = {
+  completedIds: string[];
+  savedIds: string[];
+  dailyGoal: number;
+};
 
 function App() {
   const [activeTopicId, setActiveTopicId] = useState(topics[0].id);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [revealedAnswers, setRevealedAnswers] = useState<Set<string>>(new Set());
+  const [feedMode, setFeedMode] = useState<FeedMode>("for-you");
+  const [dailyGoal, setDailyGoal] = useState(3);
   const [query, setQuery] = useState("");
 
+  useEffect(() => {
+    const stored = window.localStorage.getItem(progressKey);
+    if (!stored) {
+      return;
+    }
+
+    try {
+      const progress = JSON.parse(stored) as StoredProgress;
+      setCompletedIds(new Set(progress.completedIds ?? []));
+      setSavedIds(new Set(progress.savedIds ?? []));
+      setDailyGoal(progress.dailyGoal ?? 3);
+    } catch {
+      window.localStorage.removeItem(progressKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    const progress: StoredProgress = {
+      completedIds: Array.from(completedIds),
+      savedIds: Array.from(savedIds),
+      dailyGoal,
+    };
+    window.localStorage.setItem(progressKey, JSON.stringify(progress));
+  }, [completedIds, savedIds, dailyGoal]);
+
   const activeTopic = topics.find((topic) => topic.id === activeTopicId) ?? topics[0];
+  const activeTopicLessons = lessons.filter((lesson) => lesson.topicId === activeTopicId);
+  const savedLessons = lessons.filter((lesson) => savedIds.has(lesson.id));
 
   const visibleLessons = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return lessons.filter((lesson) => {
-      const matchesTopic = lesson.topicId === activeTopicId;
+      const matchesMode =
+        feedMode === "for-you" ||
+        (feedMode === "focus" && lesson.topicId === activeTopicId) ||
+        (feedMode === "saved" && savedIds.has(lesson.id));
       const matchesQuery =
         normalizedQuery.length === 0 ||
         lesson.title.toLowerCase().includes(normalizedQuery) ||
-        lesson.hook.toLowerCase().includes(normalizedQuery);
-      return matchesTopic && matchesQuery;
+        lesson.hook.toLowerCase().includes(normalizedQuery) ||
+        lesson.skill.toLowerCase().includes(normalizedQuery);
+      return matchesMode && matchesQuery;
     });
-  }, [activeTopicId, query]);
+  }, [activeTopicId, feedMode, query, savedIds]);
 
-  const savedLessons = lessons.filter((lesson) => savedIds.has(lesson.id));
+  const completedToday = Math.min(completedIds.size, dailyGoal);
   const completionRate =
-    visibleLessons.length > 0
-      ? Math.round(
-          (visibleLessons.filter((lesson) => completedIds.has(lesson.id)).length /
-            visibleLessons.length) *
-            100,
-        )
-      : 0;
+    dailyGoal > 0 ? Math.min(Math.round((completedToday / dailyGoal) * 100), 100) : 0;
 
-  const toggleCompleted = (lessonId: string) => {
-    setCompletedIds((current) => {
+  const nextLesson =
+    activeTopicLessons.find((lesson) => !completedIds.has(lesson.id)) ?? activeTopicLessons[0];
+
+  const toggleSetValue = (
+    setter: Dispatch<SetStateAction<Set<string>>>,
+    value: string,
+  ) => {
+    setter((current) => {
       const next = new Set(current);
-      if (next.has(lessonId)) {
-        next.delete(lessonId);
+      if (next.has(value)) {
+        next.delete(value);
       } else {
-        next.add(lessonId);
+        next.add(value);
       }
       return next;
     });
   };
 
-  const toggleSaved = (lessonId: string) => {
-    setSavedIds((current) => {
-      const next = new Set(current);
-      if (next.has(lessonId)) {
-        next.delete(lessonId);
-      } else {
-        next.add(lessonId);
-      }
-      return next;
-    });
+  const resetProgress = () => {
+    setCompletedIds(new Set());
+    setSavedIds(new Set());
+    setRevealedAnswers(new Set());
   };
 
   return (
@@ -76,9 +116,27 @@ function App() {
             <Sparkles size={20} />
           </div>
           <div>
-            <p className="eyebrow">Short-form learning</p>
+            <p className="eyebrow">AI learning feed</p>
             <h1>Learnify</h1>
           </div>
+        </div>
+
+        <div className="goal-card">
+          <div>
+            <p className="eyebrow">Today</p>
+            <strong>{completedToday} lessons learned</strong>
+          </div>
+          <label>
+            Goal
+            <input
+              aria-label="Daily lesson goal"
+              max={8}
+              min={1}
+              type="number"
+              value={dailyGoal}
+              onChange={(event) => setDailyGoal(Number(event.target.value))}
+            />
+          </label>
         </div>
 
         <label className="search-box" htmlFor="lesson-search">
@@ -86,11 +144,27 @@ function App() {
           <input
             id="lesson-search"
             type="search"
-            placeholder="Search lessons"
+            placeholder="Search topic, skill, or lesson"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
+
+        <div className="segmented-control" aria-label="Feed mode">
+          {[
+            ["for-you", "For you"],
+            ["focus", "Focus"],
+            ["saved", "Saved"],
+          ].map(([mode, label]) => (
+            <button
+              className={feedMode === mode ? "active" : ""}
+              key={mode}
+              onClick={() => setFeedMode(mode as FeedMode)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         <section className="topic-list" aria-label="Topics">
           <div className="section-heading">
@@ -101,8 +175,11 @@ function App() {
             <button
               className={topic.id === activeTopicId ? "topic-button active" : "topic-button"}
               key={topic.id}
-              onClick={() => setActiveTopicId(topic.id)}
-              style={{ "--topic-accent": topic.accent } as React.CSSProperties}
+              onClick={() => {
+                setActiveTopicId(topic.id);
+                setFeedMode("focus");
+              }}
+              style={{ "--topic-accent": topic.accent } as CSSProperties}
             >
               <span>{topic.title}</span>
               <small>{topic.level}</small>
@@ -112,7 +189,7 @@ function App() {
 
         <section className="progress-panel" aria-label="Progress">
           <div className="section-heading">
-            <span>Progress</span>
+            <span>Daily progress</span>
             <span>{completionRate}%</span>
           </div>
           <div className="progress-track">
@@ -123,24 +200,32 @@ function App() {
             <Stat icon={<Bookmark size={16} />} label="Saved" value={savedIds.size} />
             <Stat icon={<Flame size={16} />} label="Streak" value="3" />
           </div>
+          <button className="reset-button" onClick={resetProgress}>
+            <RotateCcw size={16} />
+            Reset demo progress
+          </button>
         </section>
 
         <section className="saved-panel" aria-label="Saved lessons">
           <div className="section-heading">
-            <span>Saved</span>
+            <span>Learning queue</span>
             <span>{savedLessons.length}</span>
           </div>
           {savedLessons.length === 0 ? (
-            <p className="empty-state">Save lessons to build your personal learning queue.</p>
+            <p className="empty-state">Save lessons to build a queue for your next session.</p>
           ) : (
             <div className="saved-list">
               {savedLessons.map((lesson) => (
                 <button
                   className="saved-item"
                   key={lesson.id}
-                  onClick={() => setActiveTopicId(lesson.topicId)}
+                  onClick={() => {
+                    setActiveTopicId(lesson.topicId);
+                    setFeedMode("saved");
+                  }}
                 >
-                  {lesson.title}
+                  <span>{lesson.title}</span>
+                  <small>{lesson.skill}</small>
                 </button>
               ))}
             </div>
@@ -152,8 +237,8 @@ function App() {
         <div className="feed-header">
           <div>
             <p className="eyebrow">Now learning</p>
-            <h2>{activeTopic.title}</h2>
-            <p>{activeTopic.description}</p>
+            <h2>{feedMode === "saved" ? "Saved Lessons" : activeTopic.title}</h2>
+            <p>{feedMode === "saved" ? "Your hand-picked queue for review." : activeTopic.description}</p>
           </div>
           <div className="feed-header-stat">
             <Trophy size={18} />
@@ -161,18 +246,43 @@ function App() {
           </div>
         </div>
 
+        <div className="learning-plan">
+          <div>
+            <p className="eyebrow">Path outcome</p>
+            <strong>{activeTopic.outcome}</strong>
+          </div>
+          <div>
+            <p className="eyebrow">Up next</p>
+            <strong>{nextLesson?.title ?? "No lesson selected"}</strong>
+          </div>
+          <div>
+            <p className="eyebrow">Mode</p>
+            <strong>{feedMode.replace("-", " ")}</strong>
+          </div>
+        </div>
+
         <div className="lesson-feed">
-          {visibleLessons.map((lesson, index) => (
-            <LessonCard
-              index={index + 1}
-              key={lesson.id}
-              lesson={lesson}
-              isCompleted={completedIds.has(lesson.id)}
-              isSaved={savedIds.has(lesson.id)}
-              onComplete={() => toggleCompleted(lesson.id)}
-              onSave={() => toggleSaved(lesson.id)}
-            />
-          ))}
+          {visibleLessons.length === 0 ? (
+            <div className="empty-feed">
+              <Target size={24} />
+              <strong>No lessons match this view.</strong>
+              <p>Try another topic, clear search, or save a few lessons first.</p>
+            </div>
+          ) : (
+            visibleLessons.map((lesson, index) => (
+              <LessonCard
+                index={index + 1}
+                key={lesson.id}
+                lesson={lesson}
+                isCompleted={completedIds.has(lesson.id)}
+                isSaved={savedIds.has(lesson.id)}
+                isAnswerVisible={revealedAnswers.has(lesson.id)}
+                onComplete={() => toggleSetValue(setCompletedIds, lesson.id)}
+                onRevealAnswer={() => toggleSetValue(setRevealedAnswers, lesson.id)}
+                onSave={() => toggleSetValue(setSavedIds, lesson.id)}
+              />
+            ))
+          )}
         </div>
       </section>
     </main>
@@ -180,7 +290,7 @@ function App() {
 }
 
 type StatProps = {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: number | string;
 };
@@ -200,7 +310,9 @@ type LessonCardProps = {
   lesson: Lesson;
   isCompleted: boolean;
   isSaved: boolean;
+  isAnswerVisible: boolean;
   onComplete: () => void;
+  onRevealAnswer: () => void;
   onSave: () => void;
 };
 
@@ -209,7 +321,9 @@ function LessonCard({
   lesson,
   isCompleted,
   isSaved,
+  isAnswerVisible,
   onComplete,
+  onRevealAnswer,
   onSave,
 }: LessonCardProps) {
   return (
@@ -222,6 +336,7 @@ function LessonCard({
           <span>{lesson.duration}</span>
         </div>
         <div className="lesson-number">Lesson {index}</div>
+        <div className="skill-chip">{lesson.skill}</div>
       </div>
 
       <div className="lesson-content">
@@ -230,6 +345,10 @@ function LessonCard({
           <span>
             <Clock size={14} />
             {lesson.difficulty}
+          </span>
+          <span>
+            <WandSparkles size={14} />
+            AI-ready script
           </span>
         </div>
         <h3>{lesson.title}</h3>
@@ -245,7 +364,16 @@ function LessonCard({
         <div className="quiz-strip">
           <span>Quick check</span>
           <p>{lesson.quiz}</p>
+          {isAnswerVisible && <strong>{lesson.answer}</strong>}
+          <button className="text-button" onClick={onRevealAnswer}>
+            {isAnswerVisible ? "Hide answer" : "Reveal answer"}
+          </button>
         </div>
+
+        <details className="ai-brief">
+          <summary>AI generation brief</summary>
+          <p>{lesson.aiPrompt}</p>
+        </details>
 
         <div className="lesson-actions">
           <button className={isCompleted ? "primary complete" : "primary"} onClick={onComplete}>
@@ -263,4 +391,3 @@ function LessonCard({
 }
 
 export default App;
-

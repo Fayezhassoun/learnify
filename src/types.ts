@@ -5,6 +5,7 @@ export type Topic = {
   accent: string;
   level: "Beginner" | "Intermediate" | "Advanced";
   lessonCount: number;
+  outcome: string;
 };
 
 export type Lesson = {
@@ -18,7 +19,11 @@ export type Lesson = {
   transcript: string;
   keyPoints: string[];
   quiz: string;
+  answer: string;
   nextStep: string;
   difficulty: Topic["level"];
+  skill: string;
+  aiPrompt: string;
 };
 
+export type FeedMode = "for-you" | "focus" | "saved";

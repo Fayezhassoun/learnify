@@ -7,11 +7,12 @@ This repository currently contains a front-end MVP built with Vite, React, and T
 ## What is included
 
 - Topic onboarding with starter learning paths
-- TikTok-style vertical lesson feed
-- AI lesson cards with hook, transcript, key points, quiz prompt, and next step
-- Progress stats for completed lessons, saved lessons, and current streak
-- Saved lessons drawer
+- TikTok-style lesson feed with For You, Focus, and Saved modes
+- AI lesson cards with hook, transcript, key points, quiz reveal, and next step
+- Persistent local progress for completed lessons, saved lessons, and daily goal
+- Saved lessons queue
 - Topic switching without leaving the feed
+- AI generation briefs on each lesson to prepare future script/video generation
 - Responsive mobile-first UI
 
 ## Tech stack
@@ -50,8 +51,7 @@ The current MVP is intentionally front-end only. The next production steps are:
 
 1. Add auth and user profiles.
 2. Store topics, progress, saves, and watch history in a database.
-3. Add an AI lesson generation endpoint.
-4. Add a video rendering pipeline for lesson scripts.
+3. Add an AI lesson generation endpoint that creates lesson scripts from the saved briefs.
+4. Add a video rendering pipeline for lesson scripts and voiceover.
 5. Replace placeholder thumbnails with generated or uploaded lesson media.
 6. Add recommendations based on completed lessons and quiz answers.
-

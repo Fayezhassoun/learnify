@@ -8,6 +8,7 @@ export const topics: Topic[] = [
     accent: "#4f46e5",
     level: "Beginner",
     lessonCount: 12,
+    outcome: "Build repeatable AI workflows for daily work.",
   },
   {
     id: "performance-marketing",
@@ -16,6 +17,7 @@ export const topics: Topic[] = [
     accent: "#0f766e",
     level: "Intermediate",
     lessonCount: 18,
+    outcome: "Judge campaigns by margin, signal quality, and scale risk.",
   },
   {
     id: "startup-finance",
@@ -24,6 +26,7 @@ export const topics: Topic[] = [
     accent: "#b45309",
     level: "Beginner",
     lessonCount: 10,
+    outcome: "Make cash decisions from scenarios, not vague confidence.",
   },
   {
     id: "product-design",
@@ -32,6 +35,7 @@ export const topics: Topic[] = [
     accent: "#be123c",
     level: "Intermediate",
     lessonCount: 15,
+    outcome: "Shape first screens around real user decisions.",
   },
 ];
 
@@ -53,8 +57,12 @@ export const lessons: Lesson[] = [
       "Specify the output shape.",
     ],
     quiz: "What is the first thing a useful AI brief should include?",
+    answer: "The business goal or decision the output should support.",
     nextStep: "Rewrite one vague prompt into a structured brief.",
     difficulty: "Beginner",
+    skill: "Prompt design",
+    aiPrompt:
+      "Create a 45-second lesson that teaches a knowledge worker how to brief an AI assistant for useful output.",
   },
   {
     id: "ai-review-loop",
@@ -73,8 +81,12 @@ export const lessons: Lesson[] = [
       "Use AI output as a draft.",
     ],
     quiz: "Why should AI output be reviewed before action?",
+    answer: "Because confident language can hide missing context, weak assumptions, or outdated facts.",
     nextStep: "Run a critique pass on your last AI answer.",
     difficulty: "Beginner",
+    skill: "Quality control",
+    aiPrompt:
+      "Create a short lesson showing how to turn AI output into a reviewed draft with risks and assumptions.",
   },
   {
     id: "marketing-unit-economics",
@@ -93,8 +105,12 @@ export const lessons: Lesson[] = [
       "Margin decides scale.",
     ],
     quiz: "What metric should CPA be compared against?",
+    answer: "Payout and expected contribution margin after approval, refunds, and retention.",
     nextStep: "Create a simple CPA to payout margin table.",
     difficulty: "Intermediate",
+    skill: "Unit economics",
+    aiPrompt:
+      "Create a 50-second media buying lesson explaining why CPA must be judged against payout and margin.",
   },
   {
     id: "marketing-fatigue",
@@ -113,8 +129,12 @@ export const lessons: Lesson[] = [
       "Refresh the angle, not only the asset.",
     ],
     quiz: "Which signal can reveal fatigue before CTR drops?",
+    answer: "Rising CPA while CTR remains stable.",
     nextStep: "Audit one campaign for rising CPA with stable CTR.",
     difficulty: "Intermediate",
+    skill: "Creative analysis",
+    aiPrompt:
+      "Create a fast lesson that teaches how to spot ad creative fatigue before CTR collapses.",
   },
   {
     id: "finance-runway",
@@ -133,8 +153,12 @@ export const lessons: Lesson[] = [
       "Know emergency cuts before you need them.",
     ],
     quiz: "Why is one runway number not enough?",
+    answer: "Because revenue, expenses, and payment timing change under stress.",
     nextStep: "Build a base, bad, and emergency runway case.",
     difficulty: "Beginner",
+    skill: "Cash planning",
+    aiPrompt:
+      "Create a short finance lesson explaining startup runway through base, bad, and emergency scenarios.",
   },
   {
     id: "design-first-screen",
@@ -153,8 +177,11 @@ export const lessons: Lesson[] = [
       "Make the next action obvious.",
     ],
     quiz: "What belongs on the first screen of a tool?",
+    answer: "The current state, the primary action, and the next decision.",
     nextStep: "Remove one explanatory block from a product screen.",
     difficulty: "Intermediate",
+    skill: "UX flow",
+    aiPrompt:
+      "Create a short product design lesson about why app first screens should start inside the workflow.",
   },
 ];
-
